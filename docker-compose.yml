@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (optional — app defaults to SQLite)
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: eduai
+      POSTGRES_USER: eduai_user
+      POSTGRES_PASSWORD: eduai_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eduai_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Flask Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://eduai_user:eduai_password@db:5432/eduai
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+
+volumes:
+  pgdata:
+  backend_uploads:

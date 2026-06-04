@@ -1,0 +1,14 @@
+# EduAI Backend
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+*.db
+uploads/
+instance/
+migrations/
+.pytest_cache/
